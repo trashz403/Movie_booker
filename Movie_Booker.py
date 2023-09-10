@@ -1,3 +1,4 @@
+
 import mysql.connector
 
 # Connect to MySQL
@@ -26,6 +27,16 @@ cursor.execute("""
         name VARCHAR(255) NOT NULL,
         ticket_price DECIMAL(10, 2) NOT NULL,
         seats_available INT NOT NULL
+    )
+""")
+
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS bookings (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        movie_id INT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (movie_id) REFERENCES movies(id)
     )
 """)
 
@@ -110,71 +121,77 @@ def add_movie():
     print("Movie added successfully!")
     print()
 
-def remove_movie():
-    movie_id = int(input("Enter movie ID to remove: "))
-
-    cursor.execute("DELETE FROM movies WHERE id = %s", (movie_id,))
-    db.commit()
-    print("Movie removed successfully!")
-
-# Edit movie function (only for admin)
-def edit_movie():
-    movie_id = int(input("Enter movie ID to edit: "))
-    new_name = input("Enter new movie name: ")
-    new_ticket_price = float(input("Enter new ticket price: "))
-    new_seats_available = int(input("Enter new seats available: "))
-
-    cursor.execute("""
-        UPDATE movies
-        SET name = %s, ticket_price = %s, seats_available = %s
-        WHERE id = %s
-    """, (new_name, new_ticket_price, new_seats_available, movie_id))
-
-    db.commit()
-    print("Movie edited successfully!")
-
-
 # Display movie details function
 def display_movie_details():
     cursor.execute("SELECT * FROM movies")
     movies = cursor.fetchall()
 
     print("Movie Details:")
-    print()
     for movie in movies:
-        print(f"Movie ID: {movie[0]}, Name: {movie[1]}, Ticket Price: ${movie[2]}, Seats Available: {movie[3]}")
-        print()
+        print(f"Movie ID: {movie[0]}, Name: {movie[1]}, Ticket Price: ₹{movie[2]}, Seats Available: {movie[3]}")
+
+# Function to book a movie for a user
+def book_movie(user_id):
+    display_movie_details()
+    movie_id = int(input("Enter the Movie ID you want to book: "))
+
+    # Check if the movie exists and has available seats
+    cursor.execute("SELECT * FROM movies WHERE id = %s AND seats_available > 0", (movie_id,))
+    movie = cursor.fetchone()
+
+    if movie:
+        # Check if the user has already booked this movie
+        cursor.execute("SELECT * FROM bookings WHERE user_id = %s AND movie_id = %s", (user_id, movie_id))
+        existing_booking = cursor.fetchone()
+
+        if existing_booking:
+            print("You have already booked this movie.")
+        else:
+            cursor.execute("INSERT INTO bookings (user_id, movie_id) VALUES (%s, %s)", (user_id, movie_id))
+            cursor.execute("UPDATE movies SET seats_available = seats_available - 1 WHERE id = %s", (movie_id,))
+            db.commit()
+            print("Movie booked successfully!")
+    else:
+        print("Invalid movie selection or no available seats.")
+
 # Main program
 if __name__ == "__main__":
     while True:
         print("Welcome to the Movie Booking Page!")
-        print()
         print("1. Login")
         print("2. Register")
-        print()
-        choice = input("Enter your choice (1/2): ")
-        print()
+        print("3. Exit")  # Added option to exit
+        choice = input("Enter your choice (1/2/3): ")
 
         if choice == "1":
             print("1. User Login")
             print("2. Admin Login")
-            print()
-            login_choice = input("Enter your choice (1/2): ")
+            print("3. Exit")  # Added option to exit
+            login_choice = input("Enter your choice (1/2/3): ")
 
             if login_choice == "1":
                 user = user_login()
-                print()
                 if user:
                     print(f"Logged in as user: {user[1]}.")
                     print()
-                    #me edited -Z403
-                    print("1. Display movie details")
-                    print()
-                    choice = int(input("Enter your choice : "))
-                    print()
-                    if choice == 1:
-                        display_movie_details()
-                        print()
+                    while True:
+                        print("1. Display movie details")
+                        print("2. Book a movie")
+                        print("3. Logout")
+                        print("4. Exit")  # Added option to exit
+                        user_choice = input("Enter your choice (1/2/3/4): ")
+
+                        if user_choice == "1":
+                            display_movie_details()
+                        elif user_choice == "2":
+                            book_movie(user[0])  # Pass user ID to book_movie function
+                        elif user_choice == "3":
+                            break
+                        elif user_choice == "4":  # Added option to exit
+                            print("Thank you for using our Movie Booking App!")
+                            exit()
+                        else:
+                            print("Invalid choice. Please enter 1, 2, 3, or 4.")
                 else:
                     print("User login failed. Please try again.")
             elif login_choice == "2":
@@ -183,35 +200,34 @@ if __name__ == "__main__":
                     print()
                     print(f"Logged in as admin: {admin[1]}.")
                     while True:
-                        print()
                         print("1. Add Movie")
-                        print("2. Remove Movie")
-                        print("3. Edit Movie")
-                        print("4. Display Movie Details")
-                        print("5. Logout")
-                        print()
-                        admin_choice = input("Enter your choice (1/2/3/4/5): ")
-                        print()
+                        print("2. Display Movie Details")
+                        print("3. Logout")
+                        print("4. Exit")  # Added option to exit
+                        admin_choice = input("Enter your choice (1/2/3/4): ")
+
                         if admin_choice == "1":
                             add_movie()
                         elif admin_choice == "2":
-                            remove_movie()
-                        elif admin_choice == "3":
-                            edit_movie()
-                        elif admin_choice == "4":
                             display_movie_details()
-                        elif admin_choice == "5":
+                        elif admin_choice == "3":
                             break
+                        elif admin_choice == "4":  # Added option to exit
+                            print("Thank you for using our Movie Booking App!")
+                            exit()
                         else:
-                            print("Invalid choice. Please enter a valid option.")
+                            print("Invalid choice. Please enter 1, 2, 3, or 4.")
                 else:
                     print("Admin login failed. Please try again.")
+            elif login_choice == "3":  # Added option to exit
+                print("Thank you for using our Movie Booking App!")
+                exit()
             else:
-                print("Invalid choice. Please enter 1 or 2.")
-                print()
+                print("Invalid choice. Please enter 1, 2, or 3.")
         elif choice == "2":
             register_user()
+        elif choice == "3":  # Added option to exit
+            print("Thank you for using our Movie Booking App!")
+            exit()
         else:
-            print("Invalid choice. Please enter 1 or 2.")
-
-## paisa  ₹ $ 
+            print("Invalid choice. Please enter 1, 2, or 3.")
