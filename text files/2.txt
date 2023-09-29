@@ -1,0 +1,47 @@
+It looks like you've provided a Python script that appears to be a simple command-line movie booking application. This application uses MySQL as the database and allows users to register, login, book movies, and perform various actions related to movie booking. It also has separate functionalities for administrators to manage movies.
+
+Here's a brief overview of the code:
+
+1. **Imports**: The script starts by importing the `mysql.connector` module, which is used to interact with MySQL databases.
+
+2. **Database Connection**: It establishes a connection to a MySQL database running on localhost with a specified username and password.
+
+3. **Database and Tables Creation**: It checks if the database named "movie_booking" exists, and creates it if not. It also creates three tables: `users`, `movies`, and `bookings`, if they don't exist.
+
+4. **Default Admin Account**: If there are no existing admin accounts, it creates one with the username "admin" and password "admin".
+
+5. **Functions**:
+
+   - `admin_exists()`: Checks if an admin account exists in the database.
+   
+   - `register_user()`: Allows a user to register by providing a username and password.
+   
+   - `edit_movie()`: Allows an admin to edit details of a movie.
+   
+   - `cancel_booking(user_id)`: Allows a user to cancel a booking.
+   
+   - `remove_movie()`: Allows an admin to remove a movie.
+   
+   - `user_login()`: Allows a user to log in by providing a username and password.
+   
+   - `admin_login()`: Allows an admin to log in by providing admin credentials.
+   
+   - `add_movie()`: Allows an admin to add a new movie.
+   
+   - `display_movie_details()`: Displays details of all movies.
+   
+   - `book_movie(user_id)`: Allows a user to book a movie.
+   
+6. **Main Program**:
+
+   - It presents a menu to the user with options for login, registration, and exit.
+   
+   - Depending on the user's choice, it provides further options for logging in as a user or admin, registering, or exiting the program.
+   
+   - Once logged in, the user or admin has access to specific functionalities based on their role.
+   
+   - The program runs in an infinite loop, allowing users to perform multiple actions without restarting the program.
+
+Please note that this code interacts with a MySQL database, so you'll need to have a MySQL server set up and running for this code to work. Additionally, it's important to ensure that your MySQL server is properly configured with the appropriate privileges and that the provided username and password have the necessary access rights.
+
+If you have any specific questions about this code or need further assistance, feel free to ask!
