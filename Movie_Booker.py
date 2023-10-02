@@ -1,7 +1,7 @@
 import mysql.connector
 
 # Connect to MySQL
-db = mysql.connector.connect(host="localhost",user="root",password="hack")
+db = mysql.connector.connect(host="localhost",user="root",password="root")
 
 cursor = db.cursor()
 #Create Database if they don't exist
